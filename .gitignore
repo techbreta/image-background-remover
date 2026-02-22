@@ -46,6 +46,10 @@ Thumbs.db
 ## TypeScript
 .tsbuildinfo
 
+## Dist and build artifacts
+dist/
+build-ncc/
+
 ## Docker
 docker-compose.override.yml
 .docker/
