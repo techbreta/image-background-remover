@@ -1,0 +1,60 @@
+## Node
+node_modules/
+/.pnp/
+.pnp.js
+
+## Build output
+dist/
+build/
+coverage/
+
+## Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+
+## Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+## Dependency directories
+/.pnp/
+/.pnp.js
+
+## Optional npm cache directory
+.npm
+
+## Env files
+.env
+.env.*
+
+## Editor directories and files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+## OS files
+.DS_Store
+Thumbs.db
+
+## TypeScript
+.tsbuildinfo
+
+## Docker
+docker-compose.override.yml
+.docker/
+
+## PM2
+pm2.log
+pids/
+
+## Misc
+*.tgz
+coverage/
+reports/
