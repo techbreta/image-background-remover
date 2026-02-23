@@ -55,8 +55,7 @@
     "passport",
     "joi",
     "eslint",
-    "prettier",
-    "@imgly/background-removal-node"
+    "prettier"
   ],
   "devDependencies": {
     "@commitlint/cli": "^16.2.3",
@@ -110,7 +109,6 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@imgly/background-removal-node": "^1.4.5",
     "@types/pdf-parse": "^1.1.5",
     "bcryptjs": "^2.4.3",
     "cheerio": "^1.2.0",
