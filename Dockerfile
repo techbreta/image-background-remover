@@ -74,8 +74,9 @@ COPY package.json ./
 COPY package-lock.json ./
 
 # Install only production dependencies using modern npm flags
-# `--omit=dev` is the recommended way to skip devDependencies with npm >=7.
-RUN npm ci --omit=dev
+# Skip lifecycle scripts (e.g. `prepare` -> `husky install`) because the
+# production image doesn't need git hooks and husky may not be available.
+RUN npm ci --omit=dev --ignore-scripts
 
 # Copy compiled output from base stage
 COPY --from=base /app/dist ./dist
