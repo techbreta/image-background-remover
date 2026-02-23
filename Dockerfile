@@ -18,6 +18,9 @@ RUN npm ci
 # Compile TypeScript
 RUN yarn build
 
+# Remove devDependencies now that build is complete so we can copy only production
+# deps to the final image. This runs in the base stage where devDependencies exist.
+RUN npm prune --production || true
 
 # === Production stage ===
 FROM node:18-bullseye-slim AS production
@@ -69,17 +72,13 @@ ENV DOCKERIZED=true
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Copy package files
-COPY package.json ./
-COPY package-lock.json ./
-
-# Install only production dependencies using modern npm flags
-# Skip lifecycle scripts (e.g. `prepare` -> `husky install`) because the
-# production image doesn't need git hooks and husky may not be available.
-RUN npm ci --omit=dev --ignore-scripts
-
 # Copy compiled output from base stage
 COPY --from=base /app/dist ./dist
+
+# Copy production node_modules from the build stage to avoid running install
+# lifecycle scripts in the production image (prevents husky errors while
+# preserving native binaries like sharp that were installed in the base stage).
+COPY --from=base /app/node_modules ./node_modules
 
 # Copy ecosystem config for PM2 if using PM2
 COPY ecosystem.config.json ./
