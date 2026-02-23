@@ -14,12 +14,12 @@ COPY ./src ./src
 # Install all dependencies (including dev dependencies for building)
 # Prefer npm if package-lock.json exists; otherwise fall back to yarn when available.
 RUN if [ -f package-lock.json ]; then \
-            npm ci; \
-        elif [ -f yarn.lock ]; then \
-            yarn install --frozen-lockfile; \
-        else \
-            npm install; \
-        fi
+    npm ci; \
+    elif [ -f yarn.lock ]; then \
+    yarn install --frozen-lockfile; \
+    else \
+    npm install; \
+    fi
 
 # Compile TypeScript
 RUN yarn build
@@ -81,12 +81,12 @@ COPY package-lock.json ./
 
 # Install only production dependencies (prefer npm if lockfile present)
 RUN if [ -f package-lock.json ]; then \
-            npm ci --only=production; \
-        elif [ -f yarn.lock ]; then \
-            yarn install --production --frozen-lockfile; \
-        else \
-            npm install --only=production; \
-        fi
+    npm ci --only=production; \
+    elif [ -f yarn.lock ]; then \
+    yarn install --production --frozen-lockfile; \
+    else \
+    npm install --only=production; \
+    fi
 
 # Copy compiled output from base stage
 COPY --from=base /app/dist ./dist
