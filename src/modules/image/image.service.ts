@@ -53,34 +53,59 @@ export async function removeBackgroundBufferFromUrl(
     typeof imageUrl === "string" && imageUrl.includes("res.cloudinary.com");
 
   const cloudinaryTransformation = [
-    { effect: "background_removal" },
-    { effect: "grayscale" },
+   {effect: "background_removal"}
   ];
 
   if (useCloudinary) {
     let transformedUrl: string;
     try {
-      if (/^https?:\/\//i.test(imageUrl)) {
-        // Remote/Cloudinary URL: use fetch delivery to apply transformation
+      // If the incoming URL is a Cloudinary delivery on our account, extract
+      // the `public_id` and request the transformed delivery directly. If we
+      // cannot extract a public id, fall back to fetch delivery of the URL.
+      const getPublicId = (url: string): string | null => {
+        try {
+          const idx = url.indexOf("/upload/");
+          if (idx === -1) return null;
+          let publicPart = url.substring(idx + "/upload/".length);
+          if (!publicPart) return null;
+          // remove version like v123456789/
+          publicPart = publicPart.replace(/^v\d+\//, "");
+          if (!publicPart) return null;
+          // strip query and extension
+          const noQuery = publicPart.split("?")[0];
+          if (!noQuery) return null;
+          const withoutExt = noQuery.replace(/\.[^/.]+$/, "");
+          return withoutExt || null;
+        } catch (err) {
+          return null;
+        }
+      };
+
+      const publicId = /^https?:\/\//i.test(imageUrl)
+        ? getPublicId(imageUrl)
+        : imageUrl;
+
+      if (publicId) {
+        transformedUrl = cloudinary.url(publicId, {
+          secure: true,
+          transformation: cloudinaryTransformation,
+          format: "png",
+        });
+      } else {
+        // Fall back to fetch delivery of the original URL
         transformedUrl = cloudinary.url(imageUrl, {
           type: "fetch",
           secure: true,
           transformation: cloudinaryTransformation,
           format: "png",
         });
-      } else {
-        // Treat as a Cloudinary public_id
-        transformedUrl = cloudinary.url(imageUrl, {
-          secure: true,
-          transformation: cloudinaryTransformation,
-          format: "png",
-        });
       }
+
       const { buffer: fetched } = await fetchImageBuffer(transformedUrl);
       return fetched;
     } catch (e) {
       console.warn("Cloudinary background removal failed, falling back:", e);
-      // fallthrough to local/background-removal-node path
+      // fallthrough to upload+transform path
     }
   }
 
@@ -109,12 +134,33 @@ export async function removeBackgroundBufferFromUrl(
       // Upload the buffer to Cloudinary then fetch a transformed delivery
       const uploadedUrl = await uploadToCloudinary(Buffer.from(uint8));
       if (!uploadedUrl) throw new Error("Cloudinary upload failed");
-      transformedUrl = cloudinary.url(uploadedUrl, {
-        type: "fetch",
-        secure: true,
-        transformation: cloudinaryTransformation,
-        format: "png",
-      });
+      // derive public_id from the uploaded URL
+      const idx = uploadedUrl.indexOf("/upload/");
+      let publicId: string | null = null;
+      if (idx !== -1) {
+        const publicPart = uploadedUrl.substring(idx + "/upload/".length);
+        if (publicPart) {
+          const noQuery = publicPart.split("?")[0];
+          if (noQuery) {
+            publicId = noQuery.replace(/\.[^/.]+$/, "");
+          }
+        }
+      }
+      if (publicId) {
+        transformedUrl = cloudinary.url(publicId, {
+          secure: true,
+          transformation: cloudinaryTransformation,
+          format: "png",
+        });
+      } else {
+        // fallback: fetch the uploaded URL
+        transformedUrl = cloudinary.url(uploadedUrl, {
+          type: "fetch",
+          secure: true,
+          transformation: cloudinaryTransformation,
+          format: "png",
+        });
+      }
     }
 
     const { buffer: outBuf } = await fetchImageBuffer(transformedUrl);
