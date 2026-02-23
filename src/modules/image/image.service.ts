@@ -79,7 +79,7 @@ export async function removeBackgroundBufferFromUrl(
   let bgLib: any;
   try {
     bgLib = require("@imgly/background-removal-node");
-  } catch (requireErr) {
+  } catch (requireErr: any) {
     // Provide a clearer error when the native module wasn't installed in the deployment
     console.error(
       "Failed to load '@imgly/background-removal-node'. It may not be installed in this environment.",
