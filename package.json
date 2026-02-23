@@ -55,7 +55,8 @@
     "passport",
     "joi",
     "eslint",
-    "prettier"
+    "prettier",
+    "@imgly/background-removal-node"
   ],
   "devDependencies": {
     "@commitlint/cli": "^16.2.3",
