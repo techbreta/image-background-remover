@@ -12,14 +12,8 @@ COPY tsconfig.json ./
 COPY ./src ./src
 
 # Install all dependencies (including dev dependencies for building)
-# Prefer npm if package-lock.json exists; otherwise fall back to yarn when available.
-RUN if [ -f package-lock.json ]; then \
-    npm ci; \
-    elif [ -f yarn.lock ]; then \
-    yarn install --frozen-lockfile; \
-    else \
-    npm install; \
-    fi
+# Use npm with the lockfile to get deterministic installs.
+RUN npm ci
 
 # Compile TypeScript
 RUN yarn build
@@ -79,14 +73,9 @@ ENV NODE_ENV=production
 COPY package.json ./
 COPY package-lock.json ./
 
-# Install only production dependencies (prefer npm if lockfile present)
-RUN if [ -f package-lock.json ]; then \
-    npm ci --only=production; \
-    elif [ -f yarn.lock ]; then \
-    yarn install --production --frozen-lockfile; \
-    else \
-    npm install --only=production; \
-    fi
+# Install only production dependencies using modern npm flags
+# `--omit=dev` is the recommended way to skip devDependencies with npm >=7.
+RUN npm ci --omit=dev
 
 # Copy compiled output from base stage
 COPY --from=base /app/dist ./dist
