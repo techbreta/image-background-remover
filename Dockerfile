@@ -1,5 +1,5 @@
 # === Base build stage ===
-FROM node:18-alpine AS base
+FROM node:18-bullseye-slim AS base
 
 WORKDIR /app
 
@@ -19,40 +19,55 @@ RUN yarn build
 
 
 # === Production stage ===
-FROM node:18-alpine AS production
+FROM node:18-bullseye-slim AS production
 
-# Install Chrome dependencies for Puppeteer
-# Using Google Chrome stable instead of Chromium for better compatibility
-RUN apk update && apk add --no-cache \
-    # Basic dependencies
-    udev \
-    ttf-freefont \
-    chromium \
-    # Additional dependencies for Chrome
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
+# Install Chrome/Chromium dependencies for Puppeteer on Debian slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
-    # Font dependencies
-    font-noto-emoji \
-    wqy-zenhei \
-    && rm -rf /var/cache/apk/* /tmp/*
+    fonts-liberation \
+    libasound2 \
+    libatk1.0-0 \
+    libc6 \
+    libcairo2 \
+    libcups2 \
+    libdbus-1-3 \
+    libexpat1 \
+    libfontconfig1 \
+    libgbm1 \
+    libgcc1 \
+    libgconf-2-4 \
+    libgdk-pixbuf2.0-0 \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb1 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxi6 \
+    libxrandr2 \
+    libxrender1 \
+    libxss1 \
+    libxtst6 \
+    fonts-noto-color-emoji \
+    fonts-noto-cjk \
+    chromium \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set environment variables for Puppeteer
+# Set environment variables for Puppeteer / Chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-ENV CHROME_BIN=/usr/bin/chromium-browser
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+ENV CHROME_BIN=/usr/bin/chromium
 ENV DOCKERIZED=true
-
-# Create chromium-browser symlink if it doesn't exist
-RUN if [ ! -f /usr/bin/chromium-browser ]; then \
-    ln -s /usr/bin/chromium /usr/bin/chromium-browser; \
-fi
 
 WORKDIR /app
 ENV NODE_ENV=production
-    
+
 # Copy package files
 COPY package.json ./
 COPY yarn.lock ./

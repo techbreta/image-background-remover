@@ -10,6 +10,17 @@ import { Server } from "http";
 
 let server: Server;
 
+// Startup check: verify native background removal module presence and log early
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require.resolve("@imgly/background-removal-node");
+  logger.info("@imgly/background-removal-node resolved");
+} catch (e) {
+  logger.warn(
+    "@imgly/background-removal-node not found at startup. Background removal will fail unless the deployment includes the native module (ensure production dependencies are installed or use Dockerfile-based deploy).",
+  );
+}
+
 mongoose.connect(config.mongoose.url).then(() => {
   server = app.listen(config.port, () => {
     logger.info(`Listening to Port ${config.port}`);
