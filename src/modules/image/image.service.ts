@@ -76,7 +76,21 @@ export async function removeBackgroundBufferFromUrl(
   const imageBlob = new BlobCtor([uint8], { type: inferredType });
   // Dynamically require the package so the codebase compiles even before npm install
   // Use `any` because the package types may not be present in this project.
-  const bgLib: any = require("@imgly/background-removal-node");
+  let bgLib: any;
+  try {
+    bgLib = require("@imgly/background-removal-node");
+  } catch (requireErr) {
+    // Provide a clearer error when the native module wasn't installed in the deployment
+    console.error(
+      "Failed to load '@imgly/background-removal-node'. It may not be installed in this environment.",
+      requireErr && requireErr.stack ? requireErr.stack : requireErr,
+    );
+    throw new Error(
+      "Background removal module '@imgly/background-removal-node' is not available. " +
+        "Ensure the package is listed in `dependencies` (not `devDependencies`) and that the deployment installs production dependencies or uses the Dockerfile-based build. " +
+        "If you deploy to a serverless environment that bundles the app (e.g. ncc), make sure the native module is included or deploy using a container that contains `node_modules`.",
+    );
+  }
 
   // Helper to normalize various possible outputs into a Buffer
   const normalizeOutputToBuffer = (out: any): Buffer => {
