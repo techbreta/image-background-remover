@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import catchAsync from "../utils/catchAsync";
 import AppiError from "../errors/ApiError";
-import { removeBackgroundBufferFromUrl, bufferToStream } from "./image.service";
+import {
+
+  removeBackgroundAndUploadFromUrl,
+} from "./image.service";
 import Semaphore from "./semaphore";
 
 // Limit concurrent background-removal operations to avoid OOMs in constrained environments.
@@ -22,15 +25,15 @@ export const removeBackground = catchAsync(
       });
     }
 
-    const outBuffer = await bgSemaphore.run(() =>
-      removeBackgroundBufferFromUrl(imageUrl),
-    );
+ 
 
-    // Stream result back to the client
-    res.setHeader("Content-Type", "image/png");
-    res.setHeader("Content-Disposition", "inline; filename=output.png");
+      const url = await bgSemaphore.run(() =>
+        removeBackgroundAndUploadFromUrl(imageUrl),
+      );
+      return res.status(200).json({ url });
+    
 
-    const stream = bufferToStream(outBuffer);
-    stream.pipe(res);
+    // Otherwise stream the processed image back to the client as PNG
+  
   },
 );

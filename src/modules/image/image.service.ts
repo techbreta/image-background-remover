@@ -1,5 +1,6 @@
 import { Readable } from "stream";
 import { URL } from "url";
+import { img as uploadToCloudinary } from "../utils/cloudinary";
 
 const http = require("http");
 const https = require("https");
@@ -184,6 +185,30 @@ export async function removeBackgroundBufferFromUrl(
   throw new Error(
     "@imgly/background-removal-node API not recognized. Please check the package docs.",
   );
+}
+
+/**
+ * Upload a Buffer to Cloudinary using the `src/modules/utils/cloudinary.ts` helper.
+ * Returns the uploaded image URL or throws on failure.
+ */
+export async function uploadBufferToCloudinary(
+  buffer: Buffer,
+): Promise<string> {
+  const url = await uploadToCloudinary(buffer);
+  if (!url) throw new Error("Failed to upload image to Cloudinary");
+  return url;
+}
+
+/**
+ * Convenience: remove background from a remote image URL and upload the
+ * processed result to Cloudinary returning the secure url.
+ */
+export async function removeBackgroundAndUploadFromUrl(
+  imageUrl: string,
+): Promise<string> {
+  const outBuffer = await removeBackgroundBufferFromUrl(imageUrl);
+  const uploadedUrl = await uploadBufferToCloudinary(outBuffer);
+  return uploadedUrl;
 }
 
 export function bufferToStream(buffer: Buffer): Readable {
