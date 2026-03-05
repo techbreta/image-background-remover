@@ -1,6 +1,7 @@
 import express, { Router } from "express";
 
 import imageRoute from "./image.route";
+import documentRoute from "./document.route";
 
 const router = express.Router();
 interface IRoute {
@@ -9,10 +10,13 @@ interface IRoute {
 }
 
 const defaultIRoute: IRoute[] = [
-
   {
     path: "/image",
     route: imageRoute,
+  },
+  {
+    path: "/document",
+    route: documentRoute,
   },
 ];
 
