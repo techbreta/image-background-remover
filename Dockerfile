@@ -25,7 +25,7 @@ RUN npm prune --production || true
 # === Production stage ===
 FROM node:18-bullseye-slim AS production
 
-# Install Chrome/Chromium dependencies for Puppeteer on Debian slim
+# Install Chrome/Chromium dependencies for Puppeteer + LibreOffice for document conversion
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     fonts-liberation \
@@ -61,6 +61,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-noto-color-emoji \
     fonts-noto-cjk \
     chromium \
+    libreoffice-core \
+    libreoffice-writer \
+    libreoffice-calc \
+    libreoffice-impress \
     && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables for Puppeteer / Chromium

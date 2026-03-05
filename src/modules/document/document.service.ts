@@ -1,8 +1,24 @@
-import { promisify } from "util";
 import path from "path";
 
 const libre = require("libreoffice-convert");
-const convertAsync = promisify(libre.convert);
+
+/**
+ * Wraps libre.convert in a promise.
+ * Avoids the DEP0174 deprecation warning from promisify on a
+ * function that already returns a Promise in newer versions.
+ */
+function convertAsync(
+  input: Buffer,
+  format: string,
+  filter: undefined,
+): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    libre.convert(input, format, filter, (err: Error | null, result: Buffer) => {
+      if (err) return reject(err);
+      resolve(result);
+    });
+  });
+}
 
 /** Supported output formats */
 export const SUPPORTED_FORMATS = [
