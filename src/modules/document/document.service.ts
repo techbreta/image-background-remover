@@ -13,10 +13,15 @@ function convertAsync(
   filter: undefined,
 ): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    libre.convert(input, format, filter, (err: Error | null, result: Buffer) => {
-      if (err) return reject(err);
-      resolve(result);
-    });
+    libre.convert(
+      input,
+      format,
+      filter,
+      (err: Error | null, result: Buffer) => {
+        if (err) return reject(err);
+        resolve(result);
+      },
+    );
   });
 }
 
